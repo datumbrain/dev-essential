@@ -4,6 +4,8 @@
 
 ## Quick Install
 
+![](./banner.png)
+
 Install all essential development packages with a single command:
 
 ```bash
