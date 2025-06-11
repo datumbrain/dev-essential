@@ -114,6 +114,7 @@ install_packages() {
         "libxmlsec1-dev"
         "libffi-dev"
         "liblzma-dev"
+        "git"
     )
 
     log_info "Installing packages: ${packages[*]}"
@@ -131,7 +132,7 @@ verify_installation() {
     log_info "Verifying installation..."
 
     # Key packages to verify
-    verify_packages=("gcc" "make" "curl" "wget")
+    verify_packages=("gcc" "make" "curl" "wget" "git")
 
     for package in "${verify_packages[@]}"; do
         if command -v "$package" >/dev/null 2>&1; then
