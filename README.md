@@ -46,7 +46,7 @@ DevEssential installs the essential build dependencies needed for:
 - `wget` - Web content retrieval tool
 - `curl` - Data transfer tool
 - `llvm` - Low Level Virtual Machine compiler infrastructure
-- `git`
+- `git` - Distributed version control system for tracking code changes and collaborating with others
 
 ## Manual Installation
 
