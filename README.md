@@ -46,6 +46,7 @@ DevEssential installs the essential build dependencies needed for:
 - `wget` - Web content retrieval tool
 - `curl` - Data transfer tool
 - `llvm` - Low Level Virtual Machine compiler infrastructure
+- `nvm` - Node Version Manager
 
 ## Manual Installation
 
