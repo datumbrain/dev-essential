@@ -125,6 +125,63 @@ install_packages() {
         log_error "Failed to install some packages"
         exit 1
     fi
+
+    install_nvm
+}
+
+# Install NVM (Node Version Manager)
+install_nvm() {
+    log_info "Installing NVM (Node Version Manager)..."
+
+    # Download and run the latest NVM install script
+    if curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/HEAD/install.sh | bash; then
+        log_success "NVM install script executed"
+
+        # Source NVM immediately for current session
+        export NVM_DIR="$HOME/.nvm"
+        # shellcheck disable=SC1090
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+        log_success "NVM initialized in current session"
+
+        # ------------------- Shell detection block -------------------
+        USER_SHELL=$(basename "$SHELL")
+        case "$USER_SHELL" in
+            bash)
+                SHELL_CONFIG="$HOME/.bashrc"
+                ;;
+            zsh)
+                SHELL_CONFIG="$HOME/.zshrc"
+                ;;
+            fish)
+                SHELL_CONFIG="$HOME/.config/fish/config.fish"
+                ;;
+            *)
+                SHELL_CONFIG="$HOME/.profile"
+                log_warn "Unrecognized shell ($USER_SHELL), defaulting to ~/.profile"
+                ;;
+        esac
+
+        # Add NVM initialization to the shell config if not already added
+        if ! grep -q 'export NVM_DIR="\$HOME/.nvm"' "$SHELL_CONFIG"; then
+            {
+                echo ''
+                echo '# >>> NVM setup >>>'
+                echo 'export NVM_DIR="$HOME/.nvm"'
+                echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"'
+                echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"'
+                echo '# <<< NVM setup <<<'
+            } >> "$SHELL_CONFIG"
+
+            log_success "NVM configuration added to $SHELL_CONFIG"
+        else
+            log_info "NVM configuration already present in $SHELL_CONFIG"
+        fi
+    else
+        log_error "Failed to install NVM"
+        exit 1
+    fi
 }
 
 # Check installed packages
@@ -157,13 +214,16 @@ show_next_steps() {
     echo "     echo '[[ -d \$PYENV_ROOT/bin ]] && export PATH=\"\$PYENV_ROOT/bin:\$PATH\"' >> ~/.bashrc"
     echo "     echo 'eval \"\$(pyenv init - bash)\"' >> ~/.bashrc"
     echo
-    echo "  3. Reload your shell:"
-    echo "     exec \"\$SHELL\""
-    echo
-    echo "  4. Install Python versions:"
+    echo "  3. Install Python versions:"
     echo "     pyenv install 3.11.5"
     echo "     pyenv global 3.11.5"
     echo
+    echo "  4. Reload shell again to ensure NVM is loaded:"
+    echo "     exec \"\$SHELL\""
+    echo
+    echo "  5. Install Node.js using NVM:"
+    echo "     nvm install --lts"
+    echo "     nvm use --lts"
     log_info "Happy coding! 🚀"
 }
 
