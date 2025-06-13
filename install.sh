@@ -39,31 +39,50 @@ print_banner() {
     echo -e "${NC}"
 }
 
+# Global variable for system type
+SYSTEM_TYPE=""
+
 # Check if running on supported system
 check_system() {
     log_info "Checking system compatibility..."
-
-    if [[ ! -f /etc/os-release ]]; then
-        log_error "Cannot detect operating system"
-        exit 1
-    fi
-
-    . /etc/os-release
-
-    case $ID in
-    ubuntu | debian | pop | elementary | zorin | mint)
-        log_success "Detected supported system: $PRETTY_NAME"
-        ;;
-    *)
-        log_warn "Detected system: $PRETTY_NAME"
-        log_warn "This script is designed for Ubuntu/Debian-based systems"
-        log_warn "Proceeding anyway, but some packages might not be available"
-        ;;
+    OS_TYPE="$(uname -s)"
+    case "$OS_TYPE" in
+        Linux*)
+            if [[ -f /etc/os-release ]]; then
+                . /etc/os-release
+                case $ID in
+                    ubuntu | debian | pop | elementary | zorin | mint)
+                        SYSTEM_TYPE="linux"
+                        log_success "Detected supported Linux system: $PRETTY_NAME"
+                        ;;
+                    *)
+                        SYSTEM_TYPE="linux"
+                        log_warn "Detected unsupported Linux distro: $PRETTY_NAME"
+                        log_warn "Some packages may not install correctly"
+                        ;;
+                esac
+            else
+                log_error "Unknown Linux distribution"
+                exit 1
+            fi
+            ;;
+        Darwin*)
+            SYSTEM_TYPE="macos"
+            log_success "Detected macOS system"
+            ;;
+        *)
+            log_error "Unsupported system: $OS_TYPE"
+            exit 1
+            ;;
     esac
 }
 
-# Check if user has sudo privileges
+# Check if user has sudo privileges (skipped on macOS)
 check_sudo() {
+    if [[ "$SYSTEM_TYPE" == "macos" ]]; then
+        log_info "Skipping sudo check for macOS"
+        return
+    fi
     log_info "Checking sudo privileges..."
 
     if ! sudo -n true 2>/dev/null; then
@@ -83,8 +102,10 @@ check_sudo() {
 update_packages() {
     log_info "Updating package lists..."
 
-    if sudo apt update; then
-        log_success "Package lists updated successfully"
+    if [[ "$SYSTEM_TYPE" == "linux" ]]; then
+        sudo apt update && log_success "Linux packages updated"
+    elif [[ "$SYSTEM_TYPE" == "macos" ]]; then
+        brew update && log_success "Homebrew packages updated"
     else
         log_error "Failed to update package lists"
         exit 1
@@ -118,9 +139,18 @@ install_packages() {
     )
 
     log_info "Installing packages: ${packages[*]}"
-
-    if sudo apt install -y "${packages[@]}"; then
-        log_success "All packages installed successfully!"
+    if [[ "$SYSTEM_TYPE" == "linux" ]]; then
+        if sudo apt install -y "${packages[@]}"; then
+            log_success "All packages installed successfully!"
+        fi
+    elif [[ "$SYSTEM_TYPE" == "macos" ]]; then
+        # Ensure Homebrew is installed
+        if ! command -v brew >/dev/null 2>&1; then
+            log_info "Homebrew not found, installing..."
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            eval "$(/opt/homebrew/bin/brew shellenv)" # Required for new installs (Apple Silicon)
+        fi
+        brew install "${packages[@]}"
     else
         log_error "Failed to install some packages"
         exit 1

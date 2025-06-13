@@ -1,6 +1,6 @@
 # DevEssential
 
-🚀 Essential development packages installer for Ubuntu/Debian systems with Python development focus.
+🚀 Essential development packages installer for Ubuntu/Debian and Mac OS systems with Python development focus.
 
 ## Quick Install
 
@@ -70,6 +70,9 @@ chmod +x install.sh
 - Ubuntu 20.04+ or Debian-based distributions
 - `sudo` privileges
 - Internet connection
+  Or
+
+- Mac OS
 
 ## Perfect For
 
