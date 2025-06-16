@@ -98,6 +98,31 @@ check_sudo() {
     log_success "Sudo privileges confirmed"
 }
 
+# Ensure Homebrew is installed (macOS only)
+ensure_homebrew() {
+    if [[ "$SYSTEM_TYPE" != "macos" ]]; then return; fi
+
+    if ! command -v brew &>/dev/null; then
+        log_warn "Homebrew not found, installing..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+        # Load Homebrew env (Intel vs M1)
+        if [[ -d /opt/homebrew/bin ]]; then
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+        elif [[ -d /usr/local/bin ]]; then
+            eval "$(/usr/local/bin/brew shellenv)"
+        fi
+
+        if ! command -v brew &>/dev/null; then
+            log_error "Homebrew installation failed"
+            exit 1
+        fi
+        log_success "Homebrew installed"
+    else
+        log_info "Homebrew is already installed"
+    fi
+}
+
 # Update package lists
 update_packages() {
     log_info "Updating package lists..."
@@ -262,6 +287,7 @@ main() {
     print_banner
     check_system
     check_sudo
+    ensure_homebrew
     update_packages
     install_packages
     verify_installation
