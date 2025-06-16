@@ -43,8 +43,15 @@ print_banner() {
 check_system() {
     log_info "Checking system compatibility..."
 
+    # Exit if not Linux
+    if [[ "$(uname)" != "Linux" ]]; then
+        log_error "Unsupported OS detected: $(uname)"
+        log_error "This script is intended for Linux systems only."
+        exit 1
+    fi
+
     if [[ ! -f /etc/os-release ]]; then
-        log_error "Cannot detect operating system"
+        log_error "Cannot detect Linux distribution"
         exit 1
     fi
 
@@ -52,15 +59,16 @@ check_system() {
 
     case $ID in
     ubuntu | debian | pop | elementary | zorin | mint)
-        log_success "Detected supported system: $PRETTY_NAME"
+        log_success "Detected supported Linux distribution: $PRETTY_NAME"
         ;;
     *)
-        log_warn "Detected system: $PRETTY_NAME"
+        log_warn "Detected Linux distribution: $PRETTY_NAME"
         log_warn "This script is designed for Ubuntu/Debian-based systems"
         log_warn "Proceeding anyway, but some packages might not be available"
         ;;
     esac
 }
+
 
 # Check if user has sudo privileges
 check_sudo() {
