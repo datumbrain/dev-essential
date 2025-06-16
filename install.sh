@@ -144,24 +144,44 @@ install_packages() {
     # List of packages to install
     packages=(
         "make"
-        "build-essential"
-        "libssl-dev"
-        "zlib1g-dev"
-        "libbz2-dev"
-        "libreadline-dev"
-        "libsqlite3-dev"
-        "wget"
         "curl"
-        "llvm"
-        "libncursesw5-dev"
-        "xz-utils"
-        "tk-dev"
-        "libxml2-dev"
-        "libxmlsec1-dev"
-        "libffi-dev"
-        "liblzma-dev"
+        "wget"
         "git"
+        "llvm"
     )
+
+    # Additional packages for Linux
+    if [[ "$SYSTEM_TYPE" == "linux" ]]; then
+        packages+=(
+            "build-essential"
+            "libssl-dev"
+            "zlib1g-dev"
+            "libbz2-dev"
+            "libreadline-dev"
+            "libsqlite3-dev"
+            "libncursesw5-dev"
+            "xz-utils"
+            "tk-dev"
+            "libxml2-dev"
+            "libxmlsec1-dev"
+            "libffi-dev"
+            "liblzma-dev"
+        )
+    fi
+    # Additional packages for macOS
+    if [[ "$SYSTEM_TYPE" == "macos" ]]; then
+        packages+=(
+            "openssl@3"
+            "zlib"
+            "bzip2"
+            "readline"
+            "sqlite"
+            "xz"
+            "tk"
+            "libxml2"
+            "libffi"
+        )
+    fi
 
     log_info "Installing packages: ${packages[*]}"
     if [[ "$SYSTEM_TYPE" == "linux" ]]; then
